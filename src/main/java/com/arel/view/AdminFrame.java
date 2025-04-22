@@ -6,7 +6,9 @@ import com.arel.model.Kullanici;
 import com.arel.util.PasswordUtil;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -36,6 +38,16 @@ public class AdminFrame extends JFrame {
     
     private JComboBox<String> cmbKullaniciTipi;
     
+    // Renk şeması
+    private static final Color PRIMARY_COLOR = new Color(41, 128, 185); // Mavi
+    private static final Color SECONDARY_COLOR = new Color(52, 152, 219); // Açık mavi
+    private static final Color BACKGROUND_COLOR = new Color(245, 245, 245); // Açık gri
+    private static final Color TEXT_COLOR = new Color(44, 62, 80); // Koyu lacivert
+    private static final Color BUTTON_COLOR = new Color(52, 152, 219); // Açık mavi 
+    private static final Color BUTTON_TEXT_COLOR = Color.WHITE;
+    private static final Color SUCCESS_COLOR = new Color(46, 204, 113); // Yeşil
+    private static final Color DANGER_COLOR = new Color(231, 76, 60); // Kırmızı
+    
     public AdminFrame(Kullanici admin) {
         this.admin = admin;
         this.kullaniciDAO = new KullaniciDAO();
@@ -48,31 +60,80 @@ public class AdminFrame extends JFrame {
     
     private void initComponents() {
         setTitle("Akademik Randevu Sistemi - Admin: " + admin.getTamAd());
-        setSize(900, 600);
+        setSize(1000, 700);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+        getContentPane().setBackground(BACKGROUND_COLOR);
         
         // Ana panel
-        JPanel panel = new JPanel(new BorderLayout(10, 10));
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        JPanel mainPanel = new JPanel(new BorderLayout(0, 0));
+        mainPanel.setBackground(BACKGROUND_COLOR);
+        mainPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
         
-        // Üst Panel - Hoş geldiniz mesajı ve filtre
-        JPanel ustPanel = new JPanel(new BorderLayout());
+        // Header Panel
+        JPanel headerPanel = createHeaderPanel();
+        mainPanel.add(headerPanel, BorderLayout.NORTH);
         
-        JPanel solUstPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        // Content Panel
+        JPanel contentPanel = createContentPanel();
+        mainPanel.add(contentPanel, BorderLayout.CENTER);
+        
+        setContentPane(mainPanel);
+    }
+    
+    private JPanel createHeaderPanel() {
+        JPanel headerPanel = new JPanel();
+        headerPanel.setLayout(new BorderLayout());
+        headerPanel.setBackground(PRIMARY_COLOR);
+        headerPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
+        
+        // Başlık ve Admin Bilgisi
         JLabel lblHosgeldiniz = new JLabel("Hoş geldiniz, " + admin.getTamAd());
-        lblHosgeldiniz.setFont(new Font("Arial", Font.BOLD, 16));
-        solUstPanel.add(lblHosgeldiniz);
+        lblHosgeldiniz.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lblHosgeldiniz.setForeground(Color.WHITE);
         
-        JPanel sagUstPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JLabel lblFiltre = new JLabel("Kullanıcı Tipi Filtresi:");
+        JLabel lblRol = new JLabel("Sistem Yöneticisi");
+        lblRol.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        lblRol.setForeground(new Color(255, 255, 255, 200));
+        
+        JPanel textPanel = new JPanel();
+        textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
+        textPanel.setBackground(PRIMARY_COLOR);
+        textPanel.add(lblHosgeldiniz);
+        textPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        textPanel.add(lblRol);
+        
+        // Sağ tarafta filtre
+        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        filterPanel.setBackground(PRIMARY_COLOR);
+        
+        JLabel lblFiltre = new JLabel("Kullanıcı Tipi:");
+        lblFiltre.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblFiltre.setForeground(Color.WHITE);
+        
         cmbKullaniciTipi = new JComboBox<>(new String[]{"Tümü", "Öğrenci", "Öğretim Üyesi", "Admin"});
-        cmbKullaniciTipi.setSelectedIndex(0);
-        sagUstPanel.add(lblFiltre);
-        sagUstPanel.add(cmbKullaniciTipi);
+        cmbKullaniciTipi.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        cmbKullaniciTipi.setBackground(Color.WHITE);
+        cmbKullaniciTipi.setPreferredSize(new Dimension(150, 30));
         
-        ustPanel.add(solUstPanel, BorderLayout.WEST);
-        ustPanel.add(sagUstPanel, BorderLayout.EAST);
+        filterPanel.add(lblFiltre);
+        filterPanel.add(cmbKullaniciTipi);
+        
+        headerPanel.add(textPanel, BorderLayout.WEST);
+        headerPanel.add(filterPanel, BorderLayout.EAST);
+        
+        return headerPanel;
+    }
+    
+    private JPanel createContentPanel() {
+        JPanel contentPanel = new JPanel(new BorderLayout(15, 15));
+        contentPanel.setBackground(BACKGROUND_COLOR);
+        contentPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        
+        // Tablo Başlığı
+        JLabel lblKullanicilar = new JLabel("Sistem Kullanıcıları");
+        lblKullanicilar.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        lblKullanicilar.setForeground(TEXT_COLOR);
         
         // Tablo - Kullanıcılar
         String[] kolonlar = {"ID", "Kullanıcı Adı", "Ad", "Soyad", "E-posta", "Rol"};
@@ -83,33 +144,68 @@ public class AdminFrame extends JFrame {
             }
         };
         tblKullanicilar = new JTable(tableModel);
+        tblKullanicilar.setRowHeight(30);
+        tblKullanicilar.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tblKullanicilar.setSelectionBackground(SECONDARY_COLOR);
+        tblKullanicilar.setSelectionForeground(Color.WHITE);
+        tblKullanicilar.setShowGrid(false);
+        tblKullanicilar.setIntercellSpacing(new Dimension(0, 0));
         tblKullanicilar.getTableHeader().setReorderingAllowed(false);
         tblKullanicilar.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         
+        // Tablo başlık ayarları
+        JTableHeader header = tblKullanicilar.getTableHeader();
+        header.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        header.setBackground(SECONDARY_COLOR);
+        header.setForeground(Color.WHITE);
+        header.setPreferredSize(new Dimension(header.getWidth(), 35));
+        
         JScrollPane scrollPane = new JScrollPane(tblKullanicilar);
-        scrollPane.setPreferredSize(new Dimension(850, 400));
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getViewport().setBackground(Color.WHITE);
         
         // Butonlar Paneli
-        JPanel butonlarPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        JPanel butonlarPanel = createButtonsPanel();
         
-        btnYeniKullanici = new JButton("Yeni Kullanıcı Ekle");
-        btnKullaniciDuzenle = new JButton("Kullanıcıyı Düzenle");
-        btnKullaniciSil = new JButton("Kullanıcıyı Sil");
-        btnYenile = new JButton("Yenile");
-        btnCikis = new JButton("Çıkış");
+        // Panelleri içerik paneline ekle
+        contentPanel.add(lblKullanicilar, BorderLayout.NORTH);
+        contentPanel.add(scrollPane, BorderLayout.CENTER);
+        contentPanel.add(butonlarPanel, BorderLayout.SOUTH);
         
-        butonlarPanel.add(btnYeniKullanici);
-        butonlarPanel.add(btnKullaniciDuzenle);
-        butonlarPanel.add(btnKullaniciSil);
-        butonlarPanel.add(btnYenile);
-        butonlarPanel.add(btnCikis);
+        return contentPanel;
+    }
+    
+    private JPanel createButtonsPanel() {
+        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
+        buttonsPanel.setBackground(BACKGROUND_COLOR);
+        buttonsPanel.setBorder(new EmptyBorder(15, 0, 0, 0));
         
-        // Panelleri ana panele ekle
-        panel.add(ustPanel, BorderLayout.NORTH);
-        panel.add(scrollPane, BorderLayout.CENTER);
-        panel.add(butonlarPanel, BorderLayout.SOUTH);
+        btnYeniKullanici = createStyledButton("Yeni Kullanıcı Ekle", SUCCESS_COLOR, BUTTON_TEXT_COLOR);
+        btnKullaniciDuzenle = createStyledButton("Kullanıcıyı Düzenle", BUTTON_COLOR, BUTTON_TEXT_COLOR);
+        btnKullaniciSil = createStyledButton("Kullanıcıyı Sil", DANGER_COLOR, BUTTON_TEXT_COLOR);
+        btnYenile = createStyledButton("Yenile", new Color(52, 152, 219), BUTTON_TEXT_COLOR);
+        btnCikis = createStyledButton("Çıkış", new Color(149, 165, 166), BUTTON_TEXT_COLOR);
         
-        getContentPane().add(panel);
+        buttonsPanel.add(btnYeniKullanici);
+        buttonsPanel.add(btnKullaniciDuzenle);
+        buttonsPanel.add(btnKullaniciSil);
+        buttonsPanel.add(btnYenile);
+        buttonsPanel.add(btnCikis);
+        
+        return buttonsPanel;
+    }
+    
+    private JButton createStyledButton(String text, Color bgColor, Color fgColor) {
+        JButton button = new JButton(text);
+        button.setBackground(bgColor);
+        button.setForeground(fgColor);
+        button.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        button.setFocusPainted(false);
+        button.setBorderPainted(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        button.setPreferredSize(new Dimension(180, 40));
+        
+        return button;
     }
     
     private void setupListeners() {
@@ -200,9 +296,7 @@ public class AdminFrame extends JFrame {
             }
             
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, 
-                "Kullanıcılar yüklenirken hata oluştu: " + ex.getMessage(), 
-                "Hata", JOptionPane.ERROR_MESSAGE);
+            showErrorMessage("Kullanıcılar yüklenirken hata oluştu: " + ex.getMessage());
             ex.printStackTrace();
         }
     }
@@ -219,32 +313,44 @@ public class AdminFrame extends JFrame {
         JTextField txtEmail = new JTextField();
         JComboBox<String> cmbRol = new JComboBox<>(new String[]{"Öğrenci", "Öğretim Üyesi", "Admin"});
         
-        Object[] inputs = {
-            "Kullanıcı Adı:", txtKullaniciAdi,
-            "Şifre:", txtSifre,
-            "Ad:", txtAd,
-            "Soyad:", txtSoyad,
-            "E-posta:", txtEmail,
-            "Rol:", cmbRol
-        };
+        stylizeInputField(txtKullaniciAdi);
+        stylizeInputField(txtSifre);
+        stylizeInputField(txtAd);
+        stylizeInputField(txtSoyad);
+        stylizeInputField(txtEmail);
+        stylizeComboBox(cmbRol);
         
-        int option = JOptionPane.showConfirmDialog(this, inputs, "Yeni Kullanıcı Ekle", JOptionPane.OK_CANCEL_OPTION);
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(6, 2, 10, 10));
+        panel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        
+        panel.add(createBoldLabel("Kullanıcı Adı:"));
+        panel.add(txtKullaniciAdi);
+        panel.add(createBoldLabel("Şifre:"));
+        panel.add(txtSifre);
+        panel.add(createBoldLabel("Ad:"));
+        panel.add(txtAd);
+        panel.add(createBoldLabel("Soyad:"));
+        panel.add(txtSoyad);
+        panel.add(createBoldLabel("E-posta:"));
+        panel.add(txtEmail);
+        panel.add(createBoldLabel("Rol:"));
+        panel.add(cmbRol);
+        
+        int option = JOptionPane.showConfirmDialog(this, panel, "Yeni Kullanıcı Ekle", 
+                                                  JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
         
         if (option == JOptionPane.OK_OPTION) {
             // Alanların boş olup olmadığını kontrol et
             if (txtKullaniciAdi.getText().isEmpty() || txtSifre.getText().isEmpty() ||
                 txtAd.getText().isEmpty() || txtSoyad.getText().isEmpty() || txtEmail.getText().isEmpty()) {
-                JOptionPane.showMessageDialog(this, 
-                    "Lütfen tüm alanları doldurunuz.", 
-                    "Uyarı", JOptionPane.WARNING_MESSAGE);
+                showWarningMessage("Lütfen tüm alanları doldurunuz.");
                 return;
             }
             
             // Şifre güvenliğini kontrol et
             if (!PasswordUtil.isStrongPassword(txtSifre.getText())) {
-                JOptionPane.showMessageDialog(this, 
-                    "Şifre yeterince güçlü değil! Şifre en az 8 karakter olmalı ve büyük harf, küçük harf, rakam ve özel karakter içermelidir.", 
-                    "Uyarı", JOptionPane.WARNING_MESSAGE);
+                showWarningMessage("Şifre yeterince güçlü değil! Şifre en az 8 karakter olmalı ve büyük harf, küçük harf, rakam ve özel karakter içermelidir.");
                 return;
             }
             
@@ -266,22 +372,16 @@ public class AdminFrame extends JFrame {
                 int id = kullaniciDAO.ekle(yeniKullanici);
                 
                 if (id > 0) {
-                    JOptionPane.showMessageDialog(this, 
-                        "Kullanıcı başarıyla eklendi.", 
-                        "İşlem Başarılı", JOptionPane.INFORMATION_MESSAGE);
+                    showInfoMessage("Kullanıcı başarıyla eklendi.");
                     
                     // Tabloyu yenile
                     kullanicilariYukle();
                 } else {
-                    JOptionPane.showMessageDialog(this, 
-                        "Kullanıcı eklenirken bir hata oluştu.", 
-                        "Hata", JOptionPane.ERROR_MESSAGE);
+                    showErrorMessage("Kullanıcı eklenirken bir hata oluştu.");
                 }
                 
             } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(this, 
-                    "Kullanıcı eklenirken hata oluştu: " + ex.getMessage(), 
-                    "Hata", JOptionPane.ERROR_MESSAGE);
+                showErrorMessage("Kullanıcı eklenirken hata oluştu: " + ex.getMessage());
                 ex.printStackTrace();
             }
         }
@@ -293,9 +393,7 @@ public class AdminFrame extends JFrame {
     private void secilenKullaniciyiDuzenle() {
         int selectedRow = tblKullanicilar.getSelectedRow();
         if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, 
-                "Lütfen düzenlemek istediğiniz kullanıcıyı seçin.", 
-                "Uyarı", JOptionPane.WARNING_MESSAGE);
+            showWarningMessage("Lütfen düzenlemek istediğiniz kullanıcıyı seçin.");
             return;
         }
         
@@ -306,23 +404,29 @@ public class AdminFrame extends JFrame {
             Kullanici kullanici = kullaniciDAO.getirById(kullaniciId);
             
             if (kullanici == null) {
-                JOptionPane.showMessageDialog(this, 
-                    "Kullanıcı bulunamadı.", 
-                    "Hata", JOptionPane.ERROR_MESSAGE);
+                showErrorMessage("Kullanıcı bulunamadı.");
                 return;
             }
             
             // Kullanıcı bilgilerini göster ve düzenleme için hazırla
             JTextField txtKullaniciAdi = new JTextField(kullanici.getKullaniciAdi());
-            JTextField txtSifre = new JTextField(""); // Şifre alanını boş bırak
+            JTextField txtSifre = new JTextField("");
             JTextField txtAd = new JTextField(kullanici.getAd());
             JTextField txtSoyad = new JTextField(kullanici.getSoyad());
             JTextField txtEmail = new JTextField(kullanici.getEmail());
             
+            stylizeInputField(txtKullaniciAdi);
+            stylizeInputField(txtSifre);
+            stylizeInputField(txtAd);
+            stylizeInputField(txtSoyad);
+            stylizeInputField(txtEmail);
+            
             JComboBox<String> cmbRol = new JComboBox<>(new String[]{"Öğrenci", "Öğretim Üyesi", "Admin"});
             cmbRol.setSelectedIndex(kullanici.getRol().ordinal());
+            stylizeComboBox(cmbRol);
             
             JCheckBox chkSifreDegistir = new JCheckBox("Şifreyi değiştir");
+            chkSifreDegistir.setFont(new Font("Segoe UI", Font.PLAIN, 14));
             txtSifre.setEnabled(false);
             
             chkSifreDegistir.addActionListener(new ActionListener() {
@@ -332,34 +436,38 @@ public class AdminFrame extends JFrame {
                 }
             });
             
-            Object[] inputs = {
-                "Kullanıcı Adı:", txtKullaniciAdi,
-                chkSifreDegistir,
-                "Yeni Şifre:", txtSifre,
-                "Ad:", txtAd,
-                "Soyad:", txtSoyad,
-                "E-posta:", txtEmail,
-                "Rol:", cmbRol
-            };
+            JPanel panel = new JPanel();
+            panel.setLayout(new GridLayout(7, 2, 10, 10));
+            panel.setBorder(new EmptyBorder(10, 10, 10, 10));
             
-            int option = JOptionPane.showConfirmDialog(this, inputs, "Kullanıcıyı Düzenle", JOptionPane.OK_CANCEL_OPTION);
+            panel.add(createBoldLabel("Kullanıcı Adı:"));
+            panel.add(txtKullaniciAdi);
+            panel.add(chkSifreDegistir);
+            panel.add(txtSifre);
+            panel.add(createBoldLabel("Ad:"));
+            panel.add(txtAd);
+            panel.add(createBoldLabel("Soyad:"));
+            panel.add(txtSoyad);
+            panel.add(createBoldLabel("E-posta:"));
+            panel.add(txtEmail);
+            panel.add(createBoldLabel("Rol:"));
+            panel.add(cmbRol);
+            
+            int option = JOptionPane.showConfirmDialog(this, panel, "Kullanıcıyı Düzenle", 
+                                                      JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
             
             if (option == JOptionPane.OK_OPTION) {
                 // Alanların boş olup olmadığını kontrol et
                 if (txtKullaniciAdi.getText().isEmpty() || 
                     txtAd.getText().isEmpty() || txtSoyad.getText().isEmpty() || txtEmail.getText().isEmpty()) {
-                    JOptionPane.showMessageDialog(this, 
-                        "Lütfen tüm alanları doldurunuz (şifre hariç).", 
-                        "Uyarı", JOptionPane.WARNING_MESSAGE);
+                    showWarningMessage("Lütfen tüm alanları doldurunuz (şifre hariç).");
                     return;
                 }
                 
                 // Şifre değiştirilecekse ve yeterince güçlü değilse uyarı ver
                 if (chkSifreDegistir.isSelected() && !txtSifre.getText().isEmpty() && 
                     !PasswordUtil.isStrongPassword(txtSifre.getText())) {
-                    JOptionPane.showMessageDialog(this, 
-                        "Şifre yeterince güçlü değil! Şifre en az 8 karakter olmalı ve büyük harf, küçük harf, rakam ve özel karakter içermelidir.", 
-                        "Uyarı", JOptionPane.WARNING_MESSAGE);
+                    showWarningMessage("Şifre yeterince güçlü değil! Şifre en az 8 karakter olmalı ve büyük harf, küçük harf, rakam ve özel karakter içermelidir.");
                     return;
                 }
                 
@@ -381,23 +489,17 @@ public class AdminFrame extends JFrame {
                 boolean sonuc = kullaniciDAO.guncelle(kullanici);
                 
                 if (sonuc) {
-                    JOptionPane.showMessageDialog(this, 
-                        "Kullanıcı başarıyla güncellendi.", 
-                        "İşlem Başarılı", JOptionPane.INFORMATION_MESSAGE);
+                    showInfoMessage("Kullanıcı başarıyla güncellendi.");
                     
                     // Tabloyu yenile
                     kullanicilariYukle();
                 } else {
-                    JOptionPane.showMessageDialog(this, 
-                        "Kullanıcı güncellenirken bir hata oluştu.", 
-                        "Hata", JOptionPane.ERROR_MESSAGE);
+                    showErrorMessage("Kullanıcı güncellenirken bir hata oluştu.");
                 }
             }
             
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, 
-                "Kullanıcı işlemi sırasında hata oluştu: " + ex.getMessage(), 
-                "Hata", JOptionPane.ERROR_MESSAGE);
+            showErrorMessage("Kullanıcı işlemi sırasında hata oluştu: " + ex.getMessage());
             ex.printStackTrace();
         }
     }
@@ -408,9 +510,7 @@ public class AdminFrame extends JFrame {
     private void secilenKullaniciyiSil() {
         int selectedRow = tblKullanicilar.getSelectedRow();
         if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, 
-                "Lütfen silmek istediğiniz kullanıcıyı seçin.", 
-                "Uyarı", JOptionPane.WARNING_MESSAGE);
+            showWarningMessage("Lütfen silmek istediğiniz kullanıcıyı seçin.");
             return;
         }
         
@@ -419,9 +519,7 @@ public class AdminFrame extends JFrame {
         
         // Kendisini silmek isterse uyarı ver
         if (kullaniciId == admin.getId()) {
-            JOptionPane.showMessageDialog(this, 
-                "Kendi hesabınızı silemezsiniz!", 
-                "Uyarı", JOptionPane.WARNING_MESSAGE);
+            showWarningMessage("Kendi hesabınızı silemezsiniz!");
             return;
         }
         
@@ -437,22 +535,16 @@ public class AdminFrame extends JFrame {
                 boolean sonuc = kullaniciDAO.sil(kullaniciId);
                 
                 if (sonuc) {
-                    JOptionPane.showMessageDialog(this, 
-                        "Kullanıcı başarıyla silindi.", 
-                        "İşlem Başarılı", JOptionPane.INFORMATION_MESSAGE);
+                    showInfoMessage("Kullanıcı başarıyla silindi.");
                     
                     // Tabloyu yenile
                     kullanicilariYukle();
                 } else {
-                    JOptionPane.showMessageDialog(this, 
-                        "Kullanıcı silinirken bir hata oluştu.", 
-                        "Hata", JOptionPane.ERROR_MESSAGE);
+                    showErrorMessage("Kullanıcı silinirken bir hata oluştu.");
                 }
                 
             } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(this, 
-                    "Kullanıcı silinirken hata oluştu: " + ex.getMessage(), 
-                    "Hata", JOptionPane.ERROR_MESSAGE);
+                showErrorMessage("Kullanıcı silinirken hata oluştu: " + ex.getMessage());
                 ex.printStackTrace();
             }
         }
@@ -464,11 +556,40 @@ public class AdminFrame extends JFrame {
     private void cikisYap() {
         int secim = JOptionPane.showConfirmDialog(this, 
             "Çıkış yapmak istediğinize emin misiniz?", 
-            "Çıkış", JOptionPane.YES_NO_OPTION);
+            "Çıkış", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
         
         if (secim == JOptionPane.YES_OPTION) {
             dispose();
             new LoginFrame().setVisible(true);
         }
+    }
+    
+    // Yardımcı metodlar
+    private JLabel createBoldLabel(String text) {
+        JLabel label = new JLabel(text);
+        label.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        return label;
+    }
+    
+    private void stylizeInputField(JTextField textField) {
+        textField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        textField.setMargin(new Insets(5, 5, 5, 5));
+    }
+    
+    private void stylizeComboBox(JComboBox<String> comboBox) {
+        comboBox.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        comboBox.setBackground(Color.WHITE);
+    }
+    
+    private void showErrorMessage(String message) {
+        JOptionPane.showMessageDialog(this, message, "Hata", JOptionPane.ERROR_MESSAGE);
+    }
+    
+    private void showWarningMessage(String message) {
+        JOptionPane.showMessageDialog(this, message, "Uyarı", JOptionPane.WARNING_MESSAGE);
+    }
+    
+    private void showInfoMessage(String message) {
+        JOptionPane.showMessageDialog(this, message, "Bilgi", JOptionPane.INFORMATION_MESSAGE);
     }
 } 

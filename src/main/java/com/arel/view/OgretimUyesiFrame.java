@@ -9,7 +9,9 @@ import com.arel.model.Randevu;
 import com.arel.util.DateTimeUtil;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -41,6 +43,16 @@ public class OgretimUyesiFrame extends JFrame {
     private JButton btnYenile;
     private JButton btnCikis;
     
+    // Renk şeması
+    private static final Color PRIMARY_COLOR = new Color(26, 188, 156); // Yeşil
+    private static final Color SECONDARY_COLOR = new Color(22, 160, 133); // Koyu yeşil
+    private static final Color BACKGROUND_COLOR = new Color(245, 245, 245); // Açık gri
+    private static final Color TEXT_COLOR = new Color(44, 62, 80); // Koyu lacivert
+    private static final Color BUTTON_COLOR = new Color(22, 160, 133); // Koyu yeşil
+    private static final Color BUTTON_TEXT_COLOR = Color.WHITE;
+    private static final Color DANGER_COLOR = new Color(231, 76, 60); // Kırmızı
+    private static final Color SUCCESS_COLOR = new Color(46, 204, 113); // Parlak yeşil
+    
     public OgretimUyesiFrame(Kullanici ogretimUyesi) {
         this.ogretimUyesi = ogretimUyesi;
         this.randevuDAO = new RandevuDAO();
@@ -54,12 +66,25 @@ public class OgretimUyesiFrame extends JFrame {
     
     private void initComponents() {
         setTitle("Akademik Randevu Sistemi - Öğretim Üyesi: " + ogretimUyesi.getTamAd());
-        setSize(900, 600);
+        setSize(1000, 700);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+        getContentPane().setBackground(BACKGROUND_COLOR);
+        
+        // Ana panel
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
+        mainPanel.setBackground(BACKGROUND_COLOR);
+        
+        // Üst Panel - Header
+        JPanel headerPanel = createHeaderPanel();
+        mainPanel.add(headerPanel, BorderLayout.NORTH);
         
         // Sekmeli panel
         tabbedPane = new JTabbedPane();
+        tabbedPane.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        tabbedPane.setBackground(BACKGROUND_COLOR);
+        tabbedPane.setForeground(TEXT_COLOR);
         
         // Randevular Sekmesi
         JPanel randevularPanel = createRandevularPanel();
@@ -69,19 +94,52 @@ public class OgretimUyesiFrame extends JFrame {
         JPanel musaitliklerPanel = createMusaitliklerPanel();
         tabbedPane.addTab("Müsaitlik Zamanları", musaitliklerPanel);
         
-        // Ana pencereye ekle
-        getContentPane().add(tabbedPane);
+        // Ana panele ekle
+        mainPanel.add(tabbedPane, BorderLayout.CENTER);
+        
+        setContentPane(mainPanel);
+    }
+    
+    private JPanel createHeaderPanel() {
+        JPanel headerPanel = new JPanel();
+        headerPanel.setLayout(new BorderLayout());
+        headerPanel.setBackground(PRIMARY_COLOR);
+        headerPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
+        
+        JLabel lblHosgeldiniz = new JLabel("Hoş geldiniz, " + ogretimUyesi.getTamAd());
+        lblHosgeldiniz.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lblHosgeldiniz.setForeground(Color.WHITE);
+        
+        JLabel lblRol = new JLabel("Öğretim Üyesi Paneli");
+        lblRol.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        lblRol.setForeground(new Color(255, 255, 255, 200));
+        
+        JPanel textPanel = new JPanel();
+        textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
+        textPanel.setBackground(PRIMARY_COLOR);
+        textPanel.add(lblHosgeldiniz);
+        textPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        textPanel.add(lblRol);
+        
+        headerPanel.add(textPanel, BorderLayout.WEST);
+        
+        btnCikis = createStyledButton("Çıkış", new Color(149, 165, 166), BUTTON_TEXT_COLOR);
+        btnCikis.setPreferredSize(new Dimension(120, 40));
+        
+        headerPanel.add(btnCikis, BorderLayout.EAST);
+        
+        return headerPanel;
     }
     
     private JPanel createRandevularPanel() {
-        JPanel panel = new JPanel(new BorderLayout(10, 10));
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        JPanel panel = new JPanel(new BorderLayout(15, 15));
+        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        panel.setBackground(BACKGROUND_COLOR);
         
-        // Üst Panel - Hoş geldiniz mesajı
-        JPanel ustPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JLabel lblHosgeldiniz = new JLabel("Hoş geldiniz, " + ogretimUyesi.getTamAd());
-        lblHosgeldiniz.setFont(new Font("Arial", Font.BOLD, 16));
-        ustPanel.add(lblHosgeldiniz);
+        // Tablo başlığı
+        JLabel lblRandevular = new JLabel("Randevu Talepleri ve Programınız");
+        lblRandevular.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        lblRandevular.setForeground(TEXT_COLOR);
         
         // Tablo - Randevular
         String[] kolonlar = {"ID", "Öğrenci", "Tarih", "Saat", "Konu", "Durum"};
@@ -92,27 +150,41 @@ public class OgretimUyesiFrame extends JFrame {
             }
         };
         tblRandevular = new JTable(randevuTableModel);
+        tblRandevular.setRowHeight(30);
+        tblRandevular.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tblRandevular.setSelectionBackground(SECONDARY_COLOR);
+        tblRandevular.setSelectionForeground(Color.WHITE);
+        tblRandevular.setShowGrid(false);
+        tblRandevular.setIntercellSpacing(new Dimension(0, 0));
         tblRandevular.getTableHeader().setReorderingAllowed(false);
         tblRandevular.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         
+        // Tablo başlık ayarları
+        JTableHeader header = tblRandevular.getTableHeader();
+        header.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        header.setBackground(SECONDARY_COLOR);
+        header.setForeground(Color.WHITE);
+        header.setPreferredSize(new Dimension(header.getWidth(), 35));
+        
         JScrollPane scrollPane = new JScrollPane(tblRandevular);
-        scrollPane.setPreferredSize(new Dimension(850, 400));
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getViewport().setBackground(Color.WHITE);
         
         // Butonlar Paneli
-        JPanel butonlarPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        JPanel butonlarPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
+        butonlarPanel.setBackground(BACKGROUND_COLOR);
+        butonlarPanel.setBorder(new EmptyBorder(15, 0, 0, 0));
         
-        btnRandevuOnayla = new JButton("Seçili Randevuyu Onayla");
-        btnRandevuReddet = new JButton("Seçili Randevuyu Reddet");
-        btnYenile = new JButton("Yenile");
-        btnCikis = new JButton("Çıkış");
+        btnRandevuOnayla = createStyledButton("Randevuyu Onayla", SUCCESS_COLOR, BUTTON_TEXT_COLOR);
+        btnRandevuReddet = createStyledButton("Randevuyu Reddet", DANGER_COLOR, BUTTON_TEXT_COLOR);
+        btnYenile = createStyledButton("Yenile", new Color(52, 152, 219), BUTTON_TEXT_COLOR);
         
         butonlarPanel.add(btnRandevuOnayla);
         butonlarPanel.add(btnRandevuReddet);
         butonlarPanel.add(btnYenile);
-        butonlarPanel.add(btnCikis);
         
         // Panelleri ana panele ekle
-        panel.add(ustPanel, BorderLayout.NORTH);
+        panel.add(lblRandevular, BorderLayout.NORTH);
         panel.add(scrollPane, BorderLayout.CENTER);
         panel.add(butonlarPanel, BorderLayout.SOUTH);
         
@@ -120,8 +192,14 @@ public class OgretimUyesiFrame extends JFrame {
     }
     
     private JPanel createMusaitliklerPanel() {
-        JPanel panel = new JPanel(new BorderLayout(10, 10));
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        JPanel panel = new JPanel(new BorderLayout(15, 15));
+        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        panel.setBackground(BACKGROUND_COLOR);
+        
+        // Tablo başlığı
+        JLabel lblMusaitlikler = new JLabel("Müsaitlik Zamanlarınız");
+        lblMusaitlikler.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        lblMusaitlikler.setForeground(TEXT_COLOR);
         
         // Tablo - Müsaitlikler
         String[] kolonlar = {"ID", "Gün", "Başlangıç Saati", "Bitiş Saati"};
@@ -132,27 +210,56 @@ public class OgretimUyesiFrame extends JFrame {
             }
         };
         tblMusaitlikler = new JTable(musaitlikTableModel);
+        tblMusaitlikler.setRowHeight(30);
+        tblMusaitlikler.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tblMusaitlikler.setSelectionBackground(SECONDARY_COLOR);
+        tblMusaitlikler.setSelectionForeground(Color.WHITE);
+        tblMusaitlikler.setShowGrid(false);
+        tblMusaitlikler.setIntercellSpacing(new Dimension(0, 0));
         tblMusaitlikler.getTableHeader().setReorderingAllowed(false);
         tblMusaitlikler.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         
+        // Tablo başlık ayarları
+        JTableHeader header = tblMusaitlikler.getTableHeader();
+        header.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        header.setBackground(SECONDARY_COLOR);
+        header.setForeground(Color.WHITE);
+        header.setPreferredSize(new Dimension(header.getWidth(), 35));
+        
         JScrollPane scrollPane = new JScrollPane(tblMusaitlikler);
-        scrollPane.setPreferredSize(new Dimension(850, 400));
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getViewport().setBackground(Color.WHITE);
         
         // Butonlar Paneli
-        JPanel butonlarPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        JPanel butonlarPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
+        butonlarPanel.setBackground(BACKGROUND_COLOR);
+        butonlarPanel.setBorder(new EmptyBorder(15, 0, 0, 0));
         
-        btnMusaitlikEkle = new JButton("Yeni Müsaitlik Ekle");
-        btnMusaitlikSil = new JButton("Seçili Müsaitliği Sil");
+        btnMusaitlikEkle = createStyledButton("Yeni Müsaitlik Ekle", BUTTON_COLOR, BUTTON_TEXT_COLOR);
+        btnMusaitlikSil = createStyledButton("Müsaitliği Sil", DANGER_COLOR, BUTTON_TEXT_COLOR);
         
         butonlarPanel.add(btnMusaitlikEkle);
         butonlarPanel.add(btnMusaitlikSil);
         
         // Panelleri ana panele ekle
-        panel.add(new JLabel("Müsaitlik Zamanlarınız:"), BorderLayout.NORTH);
+        panel.add(lblMusaitlikler, BorderLayout.NORTH);
         panel.add(scrollPane, BorderLayout.CENTER);
         panel.add(butonlarPanel, BorderLayout.SOUTH);
         
         return panel;
+    }
+    
+    private JButton createStyledButton(String text, Color bgColor, Color fgColor) {
+        JButton button = new JButton(text);
+        button.setBackground(bgColor);
+        button.setForeground(fgColor);
+        button.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        button.setFocusPainted(false);
+        button.setBorderPainted(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        button.setPreferredSize(new Dimension(200, 40));
+        
+        return button;
     }
     
     private void setupListeners() {
@@ -245,9 +352,7 @@ public class OgretimUyesiFrame extends JFrame {
             }
             
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, 
-                "Randevular yüklenirken hata oluştu: " + ex.getMessage(), 
-                "Hata", JOptionPane.ERROR_MESSAGE);
+            showErrorMessage("Randevular yüklenirken hata oluştu: " + ex.getMessage());
             ex.printStackTrace();
         }
     }
@@ -276,9 +381,7 @@ public class OgretimUyesiFrame extends JFrame {
             }
             
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, 
-                "Müsaitlik zamanları yüklenirken hata oluştu: " + ex.getMessage(), 
-                "Hata", JOptionPane.ERROR_MESSAGE);
+            showErrorMessage("Müsaitlik zamanları yüklenirken hata oluştu: " + ex.getMessage());
             ex.printStackTrace();
         }
     }
@@ -289,9 +392,7 @@ public class OgretimUyesiFrame extends JFrame {
     private void secilenRandevuyuOnayla() {
         int selectedRow = tblRandevular.getSelectedRow();
         if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, 
-                "Lütfen onaylamak istediğiniz randevuyu seçin.", 
-                "Uyarı", JOptionPane.WARNING_MESSAGE);
+            showWarningMessage("Lütfen onaylamak istediğiniz randevuyu seçin.");
             return;
         }
         
@@ -300,16 +401,14 @@ public class OgretimUyesiFrame extends JFrame {
         
         // Onaylanabilir mi kontrol et
         if (!durum.equals(Randevu.Durum.BEKLEMEDE.toString())) {
-            JOptionPane.showMessageDialog(this, 
-                "Sadece beklemede olan randevular onaylanabilir.", 
-                "Uyarı", JOptionPane.WARNING_MESSAGE);
+            showWarningMessage("Sadece beklemede olan randevular onaylanabilir.");
             return;
         }
         
         // Onay iste
         int secim = JOptionPane.showConfirmDialog(this, 
             "Seçili randevuyu onaylamak istediğinize emin misiniz?", 
-            "Randevu Onay", JOptionPane.YES_NO_OPTION);
+            "Randevu Onay", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
         
         if (secim == JOptionPane.YES_OPTION) {
             try {
@@ -317,22 +416,16 @@ public class OgretimUyesiFrame extends JFrame {
                 boolean sonuc = randevuDAO.durumGuncelle(randevuId, Randevu.Durum.ONAYLANDI);
                 
                 if (sonuc) {
-                    JOptionPane.showMessageDialog(this, 
-                        "Randevu başarıyla onaylandı.", 
-                        "İşlem Başarılı", JOptionPane.INFORMATION_MESSAGE);
+                    showInfoMessage("Randevu başarıyla onaylandı.");
                     
                     // Tabloyu yenile
                     randevulariYukle();
                 } else {
-                    JOptionPane.showMessageDialog(this, 
-                        "Randevu onaylanırken bir hata oluştu.", 
-                        "Hata", JOptionPane.ERROR_MESSAGE);
+                    showErrorMessage("Randevu onaylanırken bir hata oluştu.");
                 }
                 
             } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(this, 
-                    "Randevu onaylanırken hata oluştu: " + ex.getMessage(), 
-                    "Hata", JOptionPane.ERROR_MESSAGE);
+                showErrorMessage("Randevu onaylanırken hata oluştu: " + ex.getMessage());
                 ex.printStackTrace();
             }
         }
@@ -344,9 +437,7 @@ public class OgretimUyesiFrame extends JFrame {
     private void secilenRandevuyuReddet() {
         int selectedRow = tblRandevular.getSelectedRow();
         if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, 
-                "Lütfen reddetmek istediğiniz randevuyu seçin.", 
-                "Uyarı", JOptionPane.WARNING_MESSAGE);
+            showWarningMessage("Lütfen reddetmek istediğiniz randevuyu seçin.");
             return;
         }
         
@@ -355,9 +446,7 @@ public class OgretimUyesiFrame extends JFrame {
         
         // Reddedilebilir mi kontrol et
         if (!durum.equals(Randevu.Durum.BEKLEMEDE.toString())) {
-            JOptionPane.showMessageDialog(this, 
-                "Sadece beklemede olan randevular reddedilebilir.", 
-                "Uyarı", JOptionPane.WARNING_MESSAGE);
+            showWarningMessage("Sadece beklemede olan randevular reddedilebilir.");
             return;
         }
         
@@ -372,22 +461,16 @@ public class OgretimUyesiFrame extends JFrame {
                 boolean sonuc = randevuDAO.durumGuncelle(randevuId, Randevu.Durum.REDDEDILDI);
                 
                 if (sonuc) {
-                    JOptionPane.showMessageDialog(this, 
-                        "Randevu başarıyla reddedildi.", 
-                        "İşlem Başarılı", JOptionPane.INFORMATION_MESSAGE);
+                    showInfoMessage("Randevu başarıyla reddedildi.");
                     
                     // Tabloyu yenile
                     randevulariYukle();
                 } else {
-                    JOptionPane.showMessageDialog(this, 
-                        "Randevu reddedilirken bir hata oluştu.", 
-                        "Hata", JOptionPane.ERROR_MESSAGE);
+                    showErrorMessage("Randevu reddedilirken bir hata oluştu.");
                 }
                 
             } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(this, 
-                    "Randevu reddedilirken hata oluştu: " + ex.getMessage(), 
-                    "Hata", JOptionPane.ERROR_MESSAGE);
+                showErrorMessage("Randevu reddedilirken hata oluştu: " + ex.getMessage());
                 ex.printStackTrace();
             }
         }
@@ -413,9 +496,7 @@ public class OgretimUyesiFrame extends JFrame {
     private void secilenMusaitligiSil() {
         int selectedRow = tblMusaitlikler.getSelectedRow();
         if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, 
-                "Lütfen silmek istediğiniz müsaitlik zamanını seçin.", 
-                "Uyarı", JOptionPane.WARNING_MESSAGE);
+            showWarningMessage("Lütfen silmek istediğiniz müsaitlik zamanını seçin.");
             return;
         }
         
@@ -424,7 +505,7 @@ public class OgretimUyesiFrame extends JFrame {
         // Onay iste
         int secim = JOptionPane.showConfirmDialog(this, 
             "Seçili müsaitlik zamanını silmek istediğinize emin misiniz?", 
-            "Müsaitlik Silme", JOptionPane.YES_NO_OPTION);
+            "Müsaitlik Silme", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
         
         if (secim == JOptionPane.YES_OPTION) {
             try {
@@ -432,22 +513,16 @@ public class OgretimUyesiFrame extends JFrame {
                 boolean sonuc = musaitlikDAO.sil(musaitlikId);
                 
                 if (sonuc) {
-                    JOptionPane.showMessageDialog(this, 
-                        "Müsaitlik zamanı başarıyla silindi.", 
-                        "İşlem Başarılı", JOptionPane.INFORMATION_MESSAGE);
+                    showInfoMessage("Müsaitlik zamanı başarıyla silindi.");
                     
                     // Tabloyu yenile
                     musaitlikleriYukle();
                 } else {
-                    JOptionPane.showMessageDialog(this, 
-                        "Müsaitlik zamanı silinirken bir hata oluştu.", 
-                        "Hata", JOptionPane.ERROR_MESSAGE);
+                    showErrorMessage("Müsaitlik zamanı silinirken bir hata oluştu.");
                 }
                 
             } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(this, 
-                    "Müsaitlik zamanı silinirken hata oluştu: " + ex.getMessage(), 
-                    "Hata", JOptionPane.ERROR_MESSAGE);
+                showErrorMessage("Müsaitlik zamanı silinirken hata oluştu: " + ex.getMessage());
                 ex.printStackTrace();
             }
         }
@@ -459,11 +534,23 @@ public class OgretimUyesiFrame extends JFrame {
     private void cikisYap() {
         int secim = JOptionPane.showConfirmDialog(this, 
             "Çıkış yapmak istediğinize emin misiniz?", 
-            "Çıkış", JOptionPane.YES_NO_OPTION);
+            "Çıkış", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
         
         if (secim == JOptionPane.YES_OPTION) {
             dispose();
             new LoginFrame().setVisible(true);
         }
+    }
+    
+    private void showErrorMessage(String message) {
+        JOptionPane.showMessageDialog(this, message, "Hata", JOptionPane.ERROR_MESSAGE);
+    }
+    
+    private void showWarningMessage(String message) {
+        JOptionPane.showMessageDialog(this, message, "Uyarı", JOptionPane.WARNING_MESSAGE);
+    }
+    
+    private void showInfoMessage(String message) {
+        JOptionPane.showMessageDialog(this, message, "Bilgi", JOptionPane.INFORMATION_MESSAGE);
     }
 } 
