@@ -103,10 +103,10 @@ public class AdminFrame extends JFrame {
         textPanel.add(Box.createRigidArea(new Dimension(0, 5)));
         textPanel.add(lblRol);
         
-        // Sağ tarafta filtre
-        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        filterPanel.setBackground(PRIMARY_COLOR);
-        
+        // Sağ tarafta filtre ve çıkış butonu
+        JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        rightPanel.setBackground(PRIMARY_COLOR);
+
         JLabel lblFiltre = new JLabel("Kullanıcı Tipi:");
         lblFiltre.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lblFiltre.setForeground(Color.WHITE);
@@ -115,12 +115,17 @@ public class AdminFrame extends JFrame {
         cmbKullaniciTipi.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         cmbKullaniciTipi.setBackground(Color.WHITE);
         cmbKullaniciTipi.setPreferredSize(new Dimension(150, 30));
+
+        btnCikis = createStyledButton("Çıkış", new Color(149, 165, 166), BUTTON_TEXT_COLOR);
+        btnCikis.setPreferredSize(new Dimension(100, 30));
         
-        filterPanel.add(lblFiltre);
-        filterPanel.add(cmbKullaniciTipi);
+        rightPanel.add(lblFiltre);
+        rightPanel.add(cmbKullaniciTipi);
+        rightPanel.add(Box.createRigidArea(new Dimension(10, 0))); // Boşluk
+        rightPanel.add(btnCikis);
         
         headerPanel.add(textPanel, BorderLayout.WEST);
-        headerPanel.add(filterPanel, BorderLayout.EAST);
+        headerPanel.add(rightPanel, BorderLayout.EAST); // Yeni sağ panel eklendi
         
         return headerPanel;
     }
@@ -184,13 +189,11 @@ public class AdminFrame extends JFrame {
         btnKullaniciDuzenle = createStyledButton("Kullanıcıyı Düzenle", BUTTON_COLOR, BUTTON_TEXT_COLOR);
         btnKullaniciSil = createStyledButton("Kullanıcıyı Sil", DANGER_COLOR, BUTTON_TEXT_COLOR);
         btnYenile = createStyledButton("Yenile", new Color(52, 152, 219), BUTTON_TEXT_COLOR);
-        btnCikis = createStyledButton("Çıkış", new Color(149, 165, 166), BUTTON_TEXT_COLOR);
         
         buttonsPanel.add(btnYeniKullanici);
         buttonsPanel.add(btnKullaniciDuzenle);
         buttonsPanel.add(btnKullaniciSil);
         buttonsPanel.add(btnYenile);
-        buttonsPanel.add(btnCikis);
         
         return buttonsPanel;
     }

@@ -110,6 +110,15 @@ public class OgrenciFrame extends JFrame {
         
         headerPanel.add(textPanel, BorderLayout.WEST);
         
+        // Çıkış Butonu
+        btnCikis = createStyledButton("Çıkış", new Color(149, 165, 166), BUTTON_TEXT_COLOR);
+        btnCikis.setPreferredSize(new Dimension(100, 30)); // Boyutunu AdminFrame ile aynı yapalım
+        
+        JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        rightPanel.setBackground(PRIMARY_COLOR);
+        rightPanel.add(btnCikis);
+        headerPanel.add(rightPanel, BorderLayout.EAST);
+        
         return headerPanel;
     }
     
@@ -177,12 +186,10 @@ public class OgrenciFrame extends JFrame {
         btnYeniRandevu = createStyledButton("Yeni Randevu", BUTTON_COLOR, BUTTON_TEXT_COLOR);
         btnRandevuIptal = createStyledButton("Randevuyu İptal Et", DANGER_COLOR, BUTTON_TEXT_COLOR);
         btnYenile = createStyledButton("Yenile", new Color(46, 204, 113), BUTTON_TEXT_COLOR);
-        btnCikis = createStyledButton("Çıkış", new Color(149, 165, 166), BUTTON_TEXT_COLOR);
         
         buttonsPanel.add(btnYeniRandevu);
         buttonsPanel.add(btnRandevuIptal);
         buttonsPanel.add(btnYenile);
-        buttonsPanel.add(btnCikis);
         
         return buttonsPanel;
     }

@@ -124,9 +124,14 @@ public class OgretimUyesiFrame extends JFrame {
         headerPanel.add(textPanel, BorderLayout.WEST);
         
         btnCikis = createStyledButton("Çıkış", new Color(149, 165, 166), BUTTON_TEXT_COLOR);
-        btnCikis.setPreferredSize(new Dimension(120, 40));
+        btnCikis.setPreferredSize(new Dimension(100, 30));
         
-        headerPanel.add(btnCikis, BorderLayout.EAST);
+        // Sağ panel oluşturup çıkış butonunu ekleyelim hizalama için
+        JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        rightPanel.setBackground(PRIMARY_COLOR); // Header ile aynı arka plan
+        rightPanel.add(btnCikis);
+        
+        headerPanel.add(rightPanel, BorderLayout.EAST);
         
         return headerPanel;
     }
