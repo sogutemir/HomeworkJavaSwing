@@ -7,6 +7,8 @@ import com.arel.model.Kullanici;
 import com.arel.model.Musaitlik;
 import com.arel.model.Randevu;
 import com.toedter.calendar.JDateChooser;
+import com.arel.util.DateTimeUtil;
+import com.arel.util.EmailSender;
 
 import javax.swing.*;
 import java.awt.*;
@@ -472,7 +474,7 @@ public class RandevuOlusturFrame extends JFrame {
             
             // Müsait saatleri takvime yükle
             for (Musaitlik musaitlik : musaitlikler) {
-                calendarPanel.addAvailableTime(musaitlik.getBaslangicSaati());
+                calendarPanel.addMusaitlik(musaitlik);
             }
 
             // Mevcut randevuları yükle
@@ -651,6 +653,28 @@ public class RandevuOlusturFrame extends JFrame {
             randevu.setOlusturulmaTarihi(LocalDateTime.now());
 
             randevuDAO.ekle(randevu);
+
+            // E-posta gönderimi
+            try {
+                Kullanici ogretimUyesiDB = kullaniciDAO.getirById(ogretimUyesi.getId());
+                Kullanici ogrenciDB = kullaniciDAO.getirById(ogrenci.getId());
+                
+                if (ogretimUyesiDB != null && ogretimUyesiDB.getEmail() != null && !ogretimUyesiDB.getEmail().isEmpty()) {
+                    EmailSender.sendYeniRandevuTalebiEmail(
+                        ogretimUyesiDB.getEmail(),
+                        ogretimUyesiDB.getTamAd(),
+                        ogrenciDB.getTamAd(),
+                        DateTimeUtil.formatDate(randevu.getBaslangicZamani().toLocalDate()),
+                        DateTimeUtil.formatTime(randevu.getBaslangicZamani().toLocalTime()),
+                        randevu.getKonu()
+                    );
+                } else {
+                    System.err.println("Öğretim üyesi e-posta adresi bulunamadı veya geçersiz.");
+                }
+            } catch (Exception mailEx) {
+                System.err.println("Yeni randevu talebi e-postası gönderilirken hata: " + mailEx.getMessage());
+                // E-posta gönderilemese bile randevu oluşturma işlemi başarılı kabul edilsin.
+            }
 
             JOptionPane.showMessageDialog(this,
                 "Randevu başarıyla oluşturuldu.",

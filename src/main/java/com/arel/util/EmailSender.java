@@ -12,8 +12,9 @@ import java.util.Properties;
 public class EmailSender {
     private static final String HOST = "smtp.gmail.com";
     private static final String PORT = "587";
-    private static final String USERNAME = "akademik.randevu@gmail.com"; // Örnek e-posta adresi, değiştirin
-    private static final String PASSWORD = "your_app_password"; // Gmail için uygulama şifresi gerekir, güvensiz olmasın diye buraya yazmayalım
+    private static final String USERNAME = "saido117027@gmail.com";
+    private static final String PASSWORD = "**********"; // Uygun bir şifre ile değiş
+
     
     private static Properties getProperties() {
         Properties props = new Properties();
@@ -135,5 +136,21 @@ public class EmailSender {
                 "Akademik Randevu Sistemi";
         
         return sendEmail(to, subject, body);
+    }
+    
+    /**
+     * Öğrenci randevuyu iptal ettiğinde öğretim üyesine gönderilecek e-posta
+     */
+    public static boolean sendOgrenciRandevuIptalEmail(String toOgretimUyesiEmail, String ogretimUyesiAdi, 
+                                                    String ogrenciAdi, String tarih, String saat, String konu) {
+        String subject = "Randevu İptal Edildi (Öğrenci Tarafından)";
+        String body = "Sayın " + ogretimUyesiAdi + ",\n\n" +
+                "Öğrenciniz " + ogrenciAdi + " tarafından sizinle olan " + tarih + " tarihindeki saat " + saat +
+                " randevusu iptal edilmiştir.\n\n" +
+                "Randevu Konusu: " + konu + "\n\n" +
+                "Bilgilerinize sunarız.\n" +
+                "Akademik Randevu Sistemi";
+        
+        return sendEmail(toOgretimUyesiEmail, subject, body);
     }
 } 

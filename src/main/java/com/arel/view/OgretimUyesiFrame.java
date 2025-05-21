@@ -7,6 +7,7 @@ import com.arel.model.Kullanici;
 import com.arel.model.Musaitlik;
 import com.arel.model.Randevu;
 import com.arel.util.DateTimeUtil;
+import com.arel.util.EmailSender;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -423,6 +424,25 @@ public class OgretimUyesiFrame extends JFrame {
                 if (sonuc) {
                     showInfoMessage("Randevu başarıyla onaylandı.");
                     
+                    // E-posta gönderimi
+                    try {
+                        Randevu randevu = randevuDAO.getirById(randevuId);
+                        if (randevu != null && randevu.getOgrenci() != null && randevu.getOgrenci().getEmail() != null && !randevu.getOgrenci().getEmail().isEmpty()) {
+                            EmailSender.sendRandevuOnayEmail(
+                                randevu.getOgrenci().getEmail(),
+                                randevu.getOgrenci().getTamAd(),
+                                ogretimUyesi.getTamAd(), // Mevcut öğretim üyesi objesi
+                                DateTimeUtil.formatDate(randevu.getBaslangicZamani().toLocalDate()),
+                                DateTimeUtil.formatTime(randevu.getBaslangicZamani().toLocalTime()),
+                                randevu.getKonu()
+                            );
+                        } else {
+                            System.err.println("Öğrenci veya e-posta adresi bulunamadı.");
+                        }
+                    } catch (Exception mailEx) {
+                        System.err.println("Randevu onay e-postası gönderilirken hata: " + mailEx.getMessage());
+                    }
+                    
                     // Tabloyu yenile
                     randevulariYukle();
                 } else {
@@ -467,6 +487,26 @@ public class OgretimUyesiFrame extends JFrame {
                 
                 if (sonuc) {
                     showInfoMessage("Randevu başarıyla reddedildi.");
+                    
+                    // E-posta gönderimi
+                    try {
+                        Randevu randevu = randevuDAO.getirById(randevuId);
+                        if (randevu != null && randevu.getOgrenci() != null && randevu.getOgrenci().getEmail() != null && !randevu.getOgrenci().getEmail().isEmpty()) {
+                            EmailSender.sendRandevuRedEmail(
+                                randevu.getOgrenci().getEmail(),
+                                randevu.getOgrenci().getTamAd(),
+                                ogretimUyesi.getTamAd(), // Mevcut öğretim üyesi objesi
+                                DateTimeUtil.formatDate(randevu.getBaslangicZamani().toLocalDate()),
+                                DateTimeUtil.formatTime(randevu.getBaslangicZamani().toLocalTime()),
+                                randevu.getKonu(),
+                                redNedeni
+                            );
+                        } else {
+                            System.err.println("Öğrenci veya e-posta adresi bulunamadı.");
+                        }
+                    } catch (Exception mailEx) {
+                        System.err.println("Randevu red e-postası gönderilirken hata: " + mailEx.getMessage());
+                    }
                     
                     // Tabloyu yenile
                     randevulariYukle();

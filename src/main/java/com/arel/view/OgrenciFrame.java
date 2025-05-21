@@ -5,6 +5,7 @@ import com.arel.database.RandevuDAO;
 import com.arel.model.Kullanici;
 import com.arel.model.Randevu;
 import com.arel.util.DateTimeUtil;
+import com.arel.util.EmailSender;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -326,6 +327,26 @@ public class OgrenciFrame extends JFrame {
                 
                 if (sonuc) {
                     showInfoMessage("Randevu başarıyla iptal edildi.");
+                    
+                    // E-posta gönderimi
+                    try {
+                        Randevu randevu = randevuDAO.getirById(randevuId); // Randevu bilgilerini yeniden çek
+                        if (randevu != null && randevu.getOgretimUyesi() != null && randevu.getOgretimUyesi().getEmail() != null && !randevu.getOgretimUyesi().getEmail().isEmpty()) {
+                            Kullanici ogrenciDB = kullaniciDAO.getirById(ogrenci.getId()); // Öğrenci bilgisini de çekelim
+                            EmailSender.sendOgrenciRandevuIptalEmail(
+                                randevu.getOgretimUyesi().getEmail(),
+                                randevu.getOgretimUyesi().getTamAd(),
+                                ogrenciDB.getTamAd(),
+                                DateTimeUtil.formatDate(randevu.getBaslangicZamani().toLocalDate()),
+                                DateTimeUtil.formatTime(randevu.getBaslangicZamani().toLocalTime()),
+                                randevu.getKonu()
+                            );
+                        } else {
+                            System.err.println("Öğretim üyesi veya e-posta adresi bulunamadı.");
+                        }
+                    } catch (Exception mailEx) {
+                        System.err.println("Randevu iptal (öğrenci) e-postası gönderilirken hata: " + mailEx.getMessage());
+                    }
                     
                     // Tabloyu yenile
                     randevulariYukle();
