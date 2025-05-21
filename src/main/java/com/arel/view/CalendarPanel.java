@@ -88,6 +88,9 @@ public class CalendarPanel extends JPanel {
                     currentDate.with(DayOfWeek.MONDAY).plusDays(dayIndex) :
                     currentDate;
                 
+                // Kullanıcının isteği üzerine takvimden direkt seçim ve hata mesajları kaldırıldı.
+                // Takvim sadece görsel referans amaçlıdır. Seçim JDateChooser ve JComboBox ile yapılır.
+                /*
                 // Seçilen tarihin bugün veya gelecekte olup olmadığını kontrol et
                 if (selectedDate.isBefore(LocalDate.now())) {
                     JOptionPane.showMessageDialog(this,
@@ -107,6 +110,7 @@ public class CalendarPanel extends JPanel {
                         "Uyarı",
                         JOptionPane.WARNING_MESSAGE);
                 }
+                */
             }
         }
     }

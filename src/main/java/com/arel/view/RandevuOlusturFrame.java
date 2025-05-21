@@ -333,9 +333,13 @@ public class RandevuOlusturFrame extends JFrame {
             if (cmbOgretimUyesi.getSelectedItem() != null && cmbOgretimUyesi.getSelectedIndex() > 0) {
                 Kullanici secilenOgretimUyesi = (Kullanici) cmbOgretimUyesi.getSelectedItem();
                 yeniMusaitlikleriYukle(secilenOgretimUyesi.getId());
+                musaitSaatleriGuncelle();
             } else {
                 calendarPanel.clearAvailabilities();
                 calendarPanel.repaint();
+                cmbSaatler.removeAllItems();
+                cmbSaatler.addItem("Önce Üye Seçin");
+                btnRandevuOlustur.setEnabled(false);
             }
         });
         
@@ -364,13 +368,40 @@ public class RandevuOlusturFrame extends JFrame {
         });
         
         btnOncekiGun.addActionListener(e -> {
+            LocalDate newDate = calendarPanel.getCurrentDate();
+            if (calendarPanel.getViewType() == CalendarPanel.ViewType.DAILY) {
+                newDate = newDate.minusDays(1);
+            } else {
+                newDate = newDate.minusWeeks(1);
+                // Haftalık görünümde, haftanın başlangıcını (Pazartesi) dateChooser'a set edelim
+                newDate = newDate.with(DayOfWeek.MONDAY); 
+            }
+            // dateChooser'ı güncellemek, propertyChange listener'ını tetikleyecektir.
+            // Ancak, calendarPanel.setCurrentDate zaten yapılıyor ve bu da yeniMusaitlikleriYukle'yi çağırıyor.
+            // Bu biraz dolaylı, doğrudan dateChooser'ı güncelleyip event'in akmasını sağlamak daha temiz olabilir.
+            
+            // Önce takvim panelinin tarihini set edelim, bu repaint ve potansiyel yüklemeleri tetikler
             if (calendarPanel.getViewType() == CalendarPanel.ViewType.DAILY) {
                 calendarPanel.previousDay();
             } else {
                 calendarPanel.previousWeek();
             }
+            // Sonra dateChooser'ı takvimin yeni tarihiyle senkronize edelim
+            // Haftalık görünümde dateChooser'a haftanın ilk gününü (Pazartesi) atayalım
+            LocalDate syncDate = calendarPanel.getCurrentDate();
+            if (calendarPanel.getViewType() == CalendarPanel.ViewType.WEEKLY){
+                syncDate = syncDate.with(DayOfWeek.MONDAY);
+            }
+            // JDateChooser'ın geçmiş tarihleri seçmesini engellemek için kontrol
+            if (syncDate.isBefore(LocalDate.now())){
+                 dateChooser.setDate(Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()));
+            } else {
+                 dateChooser.setDate(Date.from(syncDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+            }
+            // Öğretim üyesi seçiliyse müsaitlikleri yeniden yükle (dateChooser listener'ı da tetiklenecek)
             if (cmbOgretimUyesi.getSelectedIndex() > 0) {
                 yeniMusaitlikleriYukle(((Kullanici) cmbOgretimUyesi.getSelectedItem()).getId());
+                // musaitSaatleriGuncelle(); // dateChooser listener'ı tarafından çağrılacak
             }
         });
         
@@ -380,8 +411,16 @@ public class RandevuOlusturFrame extends JFrame {
             } else {
                 calendarPanel.nextWeek();
             }
+            // dateChooser'ı takvimin yeni tarihiyle senkronize edelim
+            LocalDate syncDate = calendarPanel.getCurrentDate();
+            if (calendarPanel.getViewType() == CalendarPanel.ViewType.WEEKLY){
+                syncDate = syncDate.with(DayOfWeek.MONDAY);
+            }
+            dateChooser.setDate(Date.from(syncDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+            
             if (cmbOgretimUyesi.getSelectedIndex() > 0) {
                 yeniMusaitlikleriYukle(((Kullanici) cmbOgretimUyesi.getSelectedItem()).getId());
+                // musaitSaatleriGuncelle(); // dateChooser listener'ı tarafından çağrılacak
             }
         });
         
